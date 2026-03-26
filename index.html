@@ -2984,6 +2984,7 @@ function runToastQueue(){
 // 音效系统（Web Audio API 合成 · 沉稳科幻风）
 // ===================================================
 let _sfxCtx = null;
+const _AUDIO_KEY = 'scottGame_audioPrefs';
 let _sfxEnabled = true;  // 音效开关
 let _bgmEnabled = true;  // BGM开关（默认开）
 let _bgmInteracted = false; // 首次交互标记
@@ -3048,6 +3049,7 @@ function confirmReturnToStart(){
 
 function toggleSfx(){
   _sfxEnabled = !_sfxEnabled;
+  try{ localStorage.setItem(_AUDIO_KEY, JSON.stringify({sfx:_sfxEnabled, bgm:_bgmEnabled})); }catch(e){}
   _syncAudioBtns();
 }
 
@@ -3081,12 +3083,33 @@ function toggleTheme(){
     }
   } catch(e){}
 })();
+// 初始化音频开关（读取本地存储，与主题逻辑一致）
+(function(){
+  try{
+    const _ap = localStorage.getItem(_AUDIO_KEY);
+    if(_ap){
+      const p = JSON.parse(_ap);
+      if(p.sfx === false) _sfxEnabled = false;
+      if(p.bgm === false) _bgmEnabled = false;
+      window.addEventListener('DOMContentLoaded',()=>{
+        document.querySelectorAll('[data-audio-btn="sfx"]').forEach(b=>{
+          b.classList.toggle('active', _sfxEnabled);
+          b.textContent = _sfxEnabled ? '🔔 音效' : '🔕 音效';
+        });
+        document.querySelectorAll('[data-audio-btn="bgm"]').forEach(b=>{
+          b.classList.toggle('active', _bgmEnabled);
+        });
+      });
+    }
+  } catch(e){}
+})();
 
 // ---- BGM开关 ----
 function toggleBgm(){
   _bgmEnabled = !_bgmEnabled;
   if(_bgmEnabled){ if(_bgmInteracted) _doBgmPlay(); }
   else _doBgmPause();
+  try{ localStorage.setItem(_AUDIO_KEY, JSON.stringify({sfx:_sfxEnabled, bgm:_bgmEnabled})); }catch(e){}
   _syncAudioBtns();
 }
 
