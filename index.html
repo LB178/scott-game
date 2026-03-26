@@ -3091,14 +3091,13 @@ function toggleTheme(){
       const p = JSON.parse(_ap);
       if(p.sfx === false) _sfxEnabled = false;
       if(p.bgm === false) _bgmEnabled = false;
-      window.addEventListener('DOMContentLoaded',()=>{
-        document.querySelectorAll('[data-audio-btn="sfx"]').forEach(b=>{
-          b.classList.toggle('active', _sfxEnabled);
-          b.textContent = _sfxEnabled ? '🔔 音效' : '🔕 音效';
-        });
-        document.querySelectorAll('[data-audio-btn="bgm"]').forEach(b=>{
-          b.classList.toggle('active', _bgmEnabled);
-        });
+      // DOM已加载完毕（script在body末尾），直接同步按钮，无需等DOMContentLoaded
+      document.querySelectorAll('[data-audio-btn="sfx"]').forEach(b=>{
+        b.classList.toggle('active', _sfxEnabled);
+        b.textContent = _sfxEnabled ? '🔔 音效' : '🔕 音效';
+      });
+      document.querySelectorAll('[data-audio-btn="bgm"]').forEach(b=>{
+        b.classList.toggle('active', _bgmEnabled);
       });
     }
   } catch(e){}
