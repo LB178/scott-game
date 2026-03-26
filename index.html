@@ -2738,6 +2738,7 @@ function showEnding(type){
   if(_endingImgMap[type]) _imgPath = _endingImgMap[type];
   else if(_artGrade==='B') _imgPath='images/B.png';
   else if(_artGrade==='C') _imgPath='images/C.png';
+  const _artTitle = e.title.replace('结局：','');
   const _artHtml = _imgPath
     ? `<img src="${_imgPath}" alt="${_artTitle}" style="width:100%;height:100%;object-fit:cover;display:block;">`
     : `<div class="art-placeholder"><div style="font-size:28px;opacity:0.35">✦</div><div style="font-size:13px;letter-spacing:2px;">结局插图 · 待加载</div></div>`;
@@ -3435,7 +3436,7 @@ function showShareCard(endingKey, hp, wealth, power){
     const F = '"Microsoft YaHei","PingFang SC","Noto Serif SC",sans-serif';
 
     // 计算插图路径
-    const _sg = ed.grade, _st = ed.title, _sk = ed.key;
+    const _sg = ed.grade, _st = ed.title, _sk = endingKey;
     const _endingImgMapLocal = {
       '破产':                  'images/end_pochan.png',
       '理智归零':               'images/end_lizhi.png',
