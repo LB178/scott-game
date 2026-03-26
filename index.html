@@ -867,7 +867,7 @@ body{
 
   <!-- ★ 封面区：标题覆盖在封面上 ★ -->
   <div class="cover-hero" id="coverArt">
-    <img src="/files/cover.jpg" alt="封面美术">
+    <img src="images/cover.png" alt="封面美术">
     <!-- <div class="cover-bg-placeholder"></div> -->
     <!-- 覆盖在封面上的标题 -->
     <div class="cover-title-overlay">
@@ -1070,8 +1070,41 @@ function setProgress(current, total){
   el.innerHTML += `<span class="track-label">${total}章</span>`;
 }
 
+// ===================================================
+// 数据埋点（Supabase）
+// ===================================================
+const _SUPA_URL = 'https://rhkzvibgmhlczbgjmopd.supabase.co';
+const _SUPA_KEY = 'sb_publishable_fFPRP64Wlx3LiU7pleLDew_wQshbybn';
+const _SESSION_ID = (()=>{ try{ return crypto.randomUUID(); }catch(e){ return Math.random().toString(36).slice(2)+Date.now(); } })();
+const _GAME_START = Date.now();
+
+function _track(event, extra = {}) {
+  try {
+    const payload = {
+      session_id: _SESSION_ID,
+      event: event,
+      elapsed_seconds: Math.floor((Date.now() - _GAME_START) / 1000),
+      ...extra
+    };
+    fetch(`${_SUPA_URL}/rest/v1/game_sessions`, {
+      method: 'POST',
+      headers: {
+        'apikey': _SUPA_KEY,
+        'Authorization': `Bearer ${_SUPA_KEY}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify(payload),
+      keepalive: true
+    }).catch(()=>{});
+  } catch(e) {}
+}
+
+window.addEventListener('beforeunload', () => _track('exit'));
+
 function startGame(){
   playSfx('start');
+  _track('start');
   document.getElementById('start').classList.add('hidden');
   document.getElementById('main').classList.remove('hidden');
   loadChapter('c1');
@@ -1338,9 +1371,11 @@ const chapters = {
 c1:{chapterNum:1,title:'第一章：金人巷的败犬',
 content:`[SCENE]罗浮仙舟 · 金人巷 · 你这辈子不会忘记的地方[/SCENE]
 
-金人巷的灯笼在头顶安静地亮着，像是对这一幕毫不在意。
+冰冷的青石板透过膝盖传来刺骨的寒意。
 
-谈判已经结束了。不是以你期待的方式。素裳没有签字，那名来自星穹列车的开拓者恰好出现在错误的时间——你精心布置的局被一个变量拆散，而这一切正在以**失败记录**的形式被公司系统一条条上传。
+不远处，云骑军的机甲正在清理星核侵蚀留下的废墟。火光照亮了半片天空。
+
+素裳与那名来自星穹列车的开拓者已经离开——但他们留下的**失败记录**正在被公司系统一条条上传。
 
 通讯器震动。上司的跨星系影像投射在面前。神情冷漠，语气带着一贯的效率。
 
@@ -2609,6 +2644,7 @@ options:[
 function showEnding(type){
   window.scrollTo(0,0); showStats();
   playSfx('ending');
+  _track('ending', { ending_id: type, chapter: g.chapter });
   // 自动解锁结局（图鉴持久化）
   unlockEnding(type);
   achCheckEnding(type);
@@ -2681,14 +2717,27 @@ function showEnding(type){
   const gradeColors = {S:'#d4af37',A:'#4caf50',B:'#6fbaff',C:'#ff9966',D:'#ff4444','?':'#999'};
   const gradeColor = gradeColors[e.grade] || '#999';
   const gradeDesc  = {S:'神迹级',A:'觉醒级',B:'均衡级',C:'代价级',D:'崩溃级','?':'未知'}[e.grade]||'';
-  const _artTitle = e.title.replace('结局：','');
   const _artGrade = e.grade;
+  const _endingImgMap = {
+    '破产':                  'images/end_pochan.png',
+    '理智归零':               'images/end_lizhi.png',
+    'end_fired':             'images/end_fired.png',
+    'end_breakdown':         'images/end_breakdown.png',
+    'end_imprisoned':        'images/end_imprisoned.png',
+    'end_suicide':           'images/end_suicide.png',
+    'end_assassinated':      'images/end_assassinated.png',
+    'end_protected':         'images/end_protected.png',
+    'end_compromise':        'images/end_compromise.png',
+    'end_justice_served':    'images/end_justice_served.png',
+    'end_prison_redemption': 'images/end_prison_redemption.png',
+    'end_martyrdom':         'images/end_martyrdom.png',
+    'end_kamikaze':          'images/end_kamikaze.png',
+    'end_true_redemption':   'images/end_true_redemption.png',
+  };
   let _imgPath = '';
-  if(_artGrade==='S') _imgPath=`/files/assets/S/S ${_artTitle}.png`;
-  else if(_artGrade==='A') _imgPath=`/files/assets/A/A ${_artTitle}.png`;
-  else if(_artGrade==='B') _imgPath='/files/assets/B.png';
-  else if(_artGrade==='C') _imgPath='/files/assets/C.png';
-  else if(_artGrade==='D') _imgPath=`/files/assets/D/D ${_artTitle}.png`;
+  if(_endingImgMap[type]) _imgPath = _endingImgMap[type];
+  else if(_artGrade==='B') _imgPath='images/B.png';
+  else if(_artGrade==='C') _imgPath='images/C.png';
   const _artHtml = _imgPath
     ? `<img src="${_imgPath}" alt="${_artTitle}" style="width:100%;height:100%;object-fit:cover;display:block;">`
     : `<div class="art-placeholder"><div style="font-size:28px;opacity:0.35">✦</div><div style="font-size:13px;letter-spacing:2px;">结局插图 · 待加载</div></div>`;
@@ -3274,7 +3323,7 @@ function showAchievementGallery(){
 
   html += `<div style="display:flex;gap:12px;justify-content:center;margin-top:24px;flex-wrap:wrap;">
     <button class="main-btn" onclick="showGallery()">结局图鉴</button>
-    <button class="main-btn" onclick="location.reload()">返回开始界面</button>
+    <button class="main-btn" onclick="location.reload()">重新开始游戏</button>
     <button class="main-btn" style="background:linear-gradient(135deg,#2a1010,#3a1a1a,#2a1010);color:#ff8888;box-shadow:0 4px 20px rgba(200,50,50,0.15);font-size:12px;padding:10px 24px;" onclick="clearAchievements()">清除成就记录</button>
   </div></div>`;
 
@@ -3386,13 +3435,27 @@ function showShareCard(endingKey, hp, wealth, power){
     const F = '"Microsoft YaHei","PingFang SC","Noto Serif SC",sans-serif';
 
     // 计算插图路径
-    const _sg = ed.grade, _st = ed.title;
+    const _sg = ed.grade, _st = ed.title, _sk = ed.key;
+    const _endingImgMapLocal = {
+      '破产':                  'images/end_pochan.png',
+      '理智归零':               'images/end_lizhi.png',
+      'end_fired':             'images/end_fired.png',
+      'end_breakdown':         'images/end_breakdown.png',
+      'end_imprisoned':        'images/end_imprisoned.png',
+      'end_suicide':           'images/end_suicide.png',
+      'end_assassinated':      'images/end_assassinated.png',
+      'end_protected':         'images/end_protected.png',
+      'end_compromise':        'images/end_compromise.png',
+      'end_justice_served':    'images/end_justice_served.png',
+      'end_prison_redemption': 'images/end_prison_redemption.png',
+      'end_martyrdom':         'images/end_martyrdom.png',
+      'end_kamikaze':          'images/end_kamikaze.png',
+      'end_true_redemption':   'images/end_true_redemption.png',
+    };
     let _sImgPath = '';
-    if(_sg==='S') _sImgPath=`/files/assets/S/S ${_st}.png`;
-    else if(_sg==='A') _sImgPath=`/files/assets/A/A ${_st}.png`;
-    else if(_sg==='B') _sImgPath='/files/assets/B.png';
-    else if(_sg==='C') _sImgPath='/files/assets/C.png';
-    else if(_sg==='D') _sImgPath=`/files/assets/D/D ${_st}.png`;
+    if(_endingImgMapLocal[_sk]) _sImgPath = _endingImgMapLocal[_sk];
+    else if(_sg==='B') _sImgPath='images/B.png';
+    else if(_sg==='C') _sImgPath='images/C.png';
 
     function drawCard(artImg){
     const bgGrad = ctx.createLinearGradient(0,0,0,H);
@@ -3564,12 +3627,19 @@ function showEndingDetail(key){
   const c = gradeColor[e.grade] || '#999';
   const _gt = e.title;
   const _gg = e.grade;
+  const _endingImgMapGallery = {
+    '破产':'images/end_pochan.png','理智归零':'images/end_lizhi.png',
+    'end_fired':'images/end_fired.png','end_breakdown':'images/end_breakdown.png',
+    'end_imprisoned':'images/end_imprisoned.png','end_suicide':'images/end_suicide.png',
+    'end_assassinated':'images/end_assassinated.png','end_protected':'images/end_protected.png',
+    'end_compromise':'images/end_compromise.png','end_justice_served':'images/end_justice_served.png',
+    'end_prison_redemption':'images/end_prison_redemption.png','end_martyrdom':'images/end_martyrdom.png',
+    'end_kamikaze':'images/end_kamikaze.png','end_true_redemption':'images/end_true_redemption.png',
+  };
   let _gImgPath = '';
-  if(_gg==='S') _gImgPath=`/files/assets/S/S ${_gt}.png`;
-  else if(_gg==='A') _gImgPath=`/files/assets/A/A ${_gt}.png`;
-  else if(_gg==='B') _gImgPath='/files/assets/B.png';
-  else if(_gg==='C') _gImgPath='/files/assets/C.png';
-  else if(_gg==='D') _gImgPath=`/files/assets/D/D ${_gt}.png`;
+  if(_endingImgMapGallery[key]) _gImgPath = _endingImgMapGallery[key];
+  else if(_gg==='B') _gImgPath='images/B.png';
+  else if(_gg==='C') _gImgPath='images/C.png';
   const _gArtHtml = _gImgPath
     ? `<img src="${_gImgPath}" alt="${_gt}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;">`
     : `<div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:${c};opacity:0.4;font-size:13px;letter-spacing:1px;"><div style="font-size:24px;">✦</div><div>插图待加载</div></div>`;
@@ -3667,7 +3737,7 @@ function showGallery(){
 
   html += `<div style="display:flex;gap:12px;justify-content:center;margin-top:24px;flex-wrap:wrap;">
     <button class="main-btn" onclick="showAchievementGallery()">成就图鉴</button>
-    <button class="main-btn" onclick="location.reload()">返回开始界面</button>
+    <button class="main-btn" onclick="location.reload()">重新开始游戏</button>
     <button class="main-btn" style="background:linear-gradient(135deg,#2a1010,#3a1a1a,#2a1010);color:#ff8888;box-shadow:0 4px 20px rgba(200,50,50,0.15);font-size:12px;padding:10px 24px;" onclick="clearGallery()">清除记录</button>
   </div></div>`;
 
