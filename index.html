@@ -3378,7 +3378,8 @@ function clearGallery(){
 // 分享卡片系统（Canvas绘制）
 // ===================================================
 // endingKey: 结局key; hp/wealth/power: 触发时数值(null则不显示数值)
-function showShareCard(endingKey, hp, wealth, power){
+function _buildShareCanvas(endingKey, hp, wealth, power, bgImg, callback) {
+  // 所有结局数据
   const GRADE_COLOR = {S:'#d4af37',A:'#4caf50',B:'#6fbaff',C:'#ff9966',D:'#ff4444'};
   const GRADE_LABEL = {S:'神迹级',A:'觉醒级',B:'均衡级',C:'代价级',D:'崩溃级'};
   const endingsData = {
@@ -3414,10 +3415,125 @@ function showShareCard(endingKey, hp, wealth, power){
     'end_true_redemption':{title:'归零重启',grade:'S',hint:'理解价值的不同方式'},
   };
   const ed = endingsData[endingKey];
-  if(!ed){ alert('结局数据未找到'); return; }
-  const c = GRADE_COLOR[ed.grade] || '#999';
+  if(!ed) { callback(null, null); return; }
+  const c = GRADE_COLOR[ed.grade] || '#d4af37';
   const gl = GRADE_LABEL[ed.grade] || '';
+  const hasStats = hp !== null && wealth !== null && power !== null;
 
+  const W = 750, H = Math.round(750 * 16 / 9);
+  const canvas = document.createElement('canvas');
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
+
+  // 1. 背景
+  const bgGrad = ctx.createLinearGradient(0, 0, W*0.6, H);
+  bgGrad.addColorStop(0, '#0e0828');
+  bgGrad.addColorStop(1, '#120a30');
+  ctx.fillStyle = bgGrad;
+  ctx.fillRect(0, 0, W, H);
+
+  // 2. 底图
+  if(bgImg) {
+    const scale = Math.max(W/bgImg.naturalWidth, H/bgImg.naturalHeight);
+    const sw = bgImg.naturalWidth*scale, sh = bgImg.naturalHeight*scale;
+    ctx.drawImage(bgImg, (W-sw)/2, (H-sh)/2, sw, sh);
+  }
+
+  // 3. 底部渐变遮罩
+  const statAreaH = hasStats ? 130 : 0;
+  const overlayH = H * 0.45;
+  const grad = ctx.createLinearGradient(0, H - overlayH, 0, H - statAreaH);
+  grad.addColorStop(0,   'rgba(6,4,18,0)');
+  grad.addColorStop(0.4, 'rgba(6,4,18,0.6)');
+  grad.addColorStop(1,   'rgba(6,4,18,0.97)');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, H - overlayH, W, overlayH - statAreaH);
+
+  // 4. 数值栏背景
+  if(hasStats) {
+    ctx.fillStyle = 'rgba(4,3,14,0.97)';
+    ctx.fillRect(0, H - statAreaH, W, statAreaH);
+    ctx.strokeStyle = c + '44';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(28, H - statAreaH);
+    ctx.lineTo(W - 28, H - statAreaH);
+    ctx.stroke();
+  }
+
+  // 5. 文字区（从数值栏上方往上堆叠）
+  const textAreaBottom = hasStats ? H - statAreaH - 24 : H - 36;
+  let curY = textAreaBottom;
+
+  if(ed.hint) {
+    ctx.font = '400 24px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.fillStyle = 'rgba(200,180,130,0.88)';
+    ctx.textAlign = 'center';
+    ctx.shadowColor = 'rgba(0,0,0,1)'; ctx.shadowBlur = 10;
+    ctx.fillText(ed.hint, W/2, curY);
+    curY -= 42;
+  }
+  ctx.shadowBlur = 0;
+
+  if(ed.title) {
+    ctx.font = '700 48px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.fillStyle = '#f0e8c8';
+    ctx.textAlign = 'center';
+    ctx.shadowColor = 'rgba(0,0,0,1)'; ctx.shadowBlur = 14;
+    ctx.fillText(ed.title, W/2, curY);
+    curY -= 54;
+  }
+
+  if(gl) {
+    ctx.font = '500 26px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.fillStyle = c;
+    ctx.textAlign = 'center';
+    ctx.shadowColor = 'rgba(0,0,0,1)'; ctx.shadowBlur = 8;
+    ctx.fillText(gl, W/2, curY);
+    curY -= 82;
+  }
+
+  ctx.font = '900 140px "PingFang SC","Microsoft YaHei",sans-serif';
+  ctx.fillStyle = c;
+  ctx.textAlign = 'center';
+  ctx.shadowColor = c; ctx.shadowBlur = 50;
+  ctx.fillText(ed.grade, W/2, curY);
+  ctx.shadowBlur = 0;
+
+  // 6. 数值栏
+  if(hasStats) {
+    const statY = H - statAreaH + 22;
+    const cols = [
+      {label:'理　智', val:`${hp}/20`,   color:'#7fc8ff'},
+      {label:'财　富', val:`${wealth}`,  color:'#5cc464'},
+      {label:'权　势', val:`${power}/100`, color:'#d4af37'},
+    ];
+    const colW = W / 3;
+    cols.forEach((col, i) => {
+      const cx = colW * i + colW / 2;
+      ctx.textAlign = 'center'; ctx.shadowBlur = 0;
+      ctx.font = '400 21px "PingFang SC","Microsoft YaHei",sans-serif';
+      ctx.fillStyle = col.color + 'aa';
+      ctx.fillText(col.label, cx, statY + 22);
+      ctx.font = '700 36px "PingFang SC","Microsoft YaHei",sans-serif';
+      ctx.fillStyle = col.color;
+      ctx.shadowColor = col.color; ctx.shadowBlur = 8;
+      ctx.fillText(col.val, cx, statY + 68);
+      ctx.shadowBlur = 0;
+    });
+  }
+
+  // 7. 顶部装饰
+  ctx.font = '400 20px "Courier New",monospace';
+  ctx.fillStyle = 'rgba(212,175,55,0.45)';
+  ctx.textAlign = 'center'; ctx.shadowBlur = 0;
+  ctx.fillText('✦  S T A R P E A C E  C O R P  ✦', W/2, 46);
+
+  callback(canvas.toDataURL('image/png'), ed.title);
+}
+
+function showShareCard(endingKey, hp, wealth, power){
+  const GRADE_COLOR = {S:'#d4af37',A:'#4caf50',B:'#6fbaff',C:'#ff9966',D:'#ff4444'};
   const IMGMAP = {
     '破产':'images/end_pochan.png','理智归零':'images/end_lizhi.png',
     'end_fired':'images/end_fired.png','end_breakdown':'images/end_breakdown.png',
@@ -3428,20 +3544,22 @@ function showShareCard(endingKey, hp, wealth, power){
     'end_kamikaze':'images/end_kamikaze.png','end_true_redemption':'images/end_true_redemption.png',
     'end_monster':'images/B.png','end_hollow_success':'images/B.png','end_stagnant':'images/B.png',
   };
-  let imgPath = IMGMAP[endingKey] || (ed.grade==='B'?'images/B.png':ed.grade==='C'?'images/C.png':'');
-  const artHtml = imgPath
-    ? `<img src="${imgPath}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;">`
-    : `<div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:${c};opacity:0.4;font-size:13px;letter-spacing:1px;"><div style="font-size:24px;">✦</div><div>插图待加载</div></div>`;
+  // 先取 grade 用于边框色
+  const _gradeMap = {
+    '破产':'D','理智归零':'D','end_fired':'D','end_breakdown':'D','end_imprisoned':'D',
+    'end_suicide':'D','end_assassinated':'D','end_monster':'C','end_hollow_success':'C',
+    'end_stagnant':'C','end_betrayed':'C','end_hunted':'C','end_delayed_justice':'C',
+    'end_fugitive_final':'C','end_destroyed_by_guilt':'C','end_uneasy_alliance':'B',
+    'end_ordinary':'B','end_exile':'B','end_escape':'B','end_silent_penance':'B',
+    'end_late_redemption':'B','end_balanced_redemption':'B','end_protected':'A',
+    'end_compromise':'A','end_principled':'B','end_martyrdom':'S','end_kamikaze':'S',
+    'end_justice_served':'A','end_prison_redemption':'A','end_true_redemption':'S',
+  };
+  const _g = _gradeMap[endingKey] || 'B';
+  const c = GRADE_COLOR[_g] || '#999';
+  const imgPath = IMGMAP[endingKey] || (_g==='B'?'images/B.png':_g==='C'?'images/C.png':'');
 
-  // 数值栏（游玩结局时显示）
-  const showStats = hp!==null && wealth!==null && power!==null;
-  const statsHtml = showStats ? `
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:12px 16px;border-top:1px solid ${c}22;background:rgba(0,0,0,0.25);">
-      <div style="text-align:center;"><div style="font-size:10px;color:rgba(111,186,255,0.7);letter-spacing:1px;margin-bottom:3px;">理　智</div><div style="font-size:16px;font-weight:700;color:#7fc8ff;">${hp}/20</div></div>
-      <div style="text-align:center;"><div style="font-size:10px;color:rgba(76,175,80,0.7);letter-spacing:1px;margin-bottom:3px;">财　富</div><div style="font-size:16px;font-weight:700;color:#5cc464;">${wealth}</div></div>
-      <div style="text-align:center;"><div style="font-size:10px;color:rgba(212,175,55,0.7);letter-spacing:1px;margin-bottom:3px;">权　势</div><div style="font-size:16px;font-weight:700;color:#d4af37;">${power}/100</div></div>
-    </div>` : '';
-
+  // 创建 overlay，图片区先放占位 loading
   const overlay = document.createElement('div');
   overlay.id = 'share-overlay';
   overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:99998;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px);';
@@ -3450,194 +3568,59 @@ function showShareCard(endingKey, hp, wealth, power){
   overlay.innerHTML = `
     <div style="background:linear-gradient(160deg,rgba(20,15,40,0.98),rgba(10,8,20,0.99));border:1px solid ${c}44;border-radius:16px;max-width:400px;width:100%;position:relative;box-shadow:0 8px 60px rgba(0,0,0,0.8);overflow-y:auto;max-height:90vh;">
       <button onclick="document.getElementById('share-overlay').remove()" style="position:absolute;top:12px;right:14px;background:rgba(0,0,0,0.5);border:none;color:#ccc;font-size:16px;cursor:pointer;line-height:1;padding:4px 8px;z-index:10;border-radius:6px;">✕</button>
-      <div style="width:100%;aspect-ratio:9/16;background:linear-gradient(160deg,#0e0828,#120a30);position:relative;">
-        ${artHtml}
-        <div style="position:absolute;bottom:0;left:0;right:0;padding:40px 18px 22px;background:linear-gradient(to top,rgba(6,4,18,0.97) 0%,rgba(6,4,18,0.8) 45%,transparent 100%);display:flex;flex-direction:column;align-items:center;gap:5px;">
-          <div style="font-size:52px;font-weight:900;color:${c};line-height:1;text-shadow:0 0 24px ${c},0 2px 4px rgba(0,0,0,0.9);-webkit-text-stroke:1px rgba(0,0,0,0.6);">${ed.grade}</div>
-          <div style="font-size:12px;letter-spacing:3px;color:${c};text-shadow:0 1px 4px rgba(0,0,0,1);">${gl}</div>
-          <div style="font-size:18px;font-weight:700;letter-spacing:3px;color:#f0e8c8;text-shadow:0 2px 8px rgba(0,0,0,1);margin-top:2px;">${ed.title}</div>
-          <div style="font-size:11px;color:rgba(200,180,130,0.9);line-height:1.7;text-align:center;text-shadow:0 1px 4px rgba(0,0,0,1);padding:0 4px;">${ed.hint}</div>
-        </div>
+      <div id="share-img-wrap" style="width:100%;aspect-ratio:9/16;background:linear-gradient(160deg,#0e0828,#120a30);position:relative;display:flex;align-items:center;justify-content:center;">
+        <div id="share-loading" style="color:${c};opacity:0.6;font-size:13px;letter-spacing:2px;">合成中…</div>
       </div>
-      ${statsHtml}
       <div style="padding:14px 20px 18px;text-align:center;">
         <button id="share-save-btn" style="background:linear-gradient(135deg,#1a3020,#2a4828,#1a3020);color:#80d060;border:1px solid rgba(80,160,60,0.4);border-radius:10px;padding:10px 28px;font-size:13px;letter-spacing:2px;cursor:pointer;font-family:inherit;" onclick="shareDownload()">保存图片</button>
-        <p style="font-size:13px;color:#7a6f55;letter-spacing:1px;margin-top:10px;margin-bottom:0;">手机端可长按图片直接保存</p>
+        <p id="share-tip" style="font-size:13px;color:#7a6f55;letter-spacing:1px;margin-top:10px;margin-bottom:0;">合成中，请稍候…</p>
       </div>
     </div>
   `;
-
   document.body.appendChild(overlay);
+
+  // 合成函数
+  function doCompose(bgImg) {
+    _buildShareCanvas(endingKey, hp, wealth, power, bgImg, (dataURL, title) => {
+      if(!dataURL) return;
+      const wrap = document.getElementById('share-img-wrap');
+      if(wrap) {
+        wrap.innerHTML = '';
+        const composedImg = document.createElement('img');
+        composedImg.src = dataURL;
+        composedImg.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;border-radius:14px 14px 0 0;';
+        composedImg.setAttribute('data-dataurl', dataURL);
+        wrap.appendChild(composedImg);
+      }
+      const tip = document.getElementById('share-tip');
+      if(tip) tip.textContent = '长按图片即可保存到相册';
+      const btn = document.getElementById('share-save-btn');
+      if(btn) btn.textContent = '保存图片（下载）';
+    });
+  }
+
+  if(imgPath) {
+    const bg = new Image();
+    bg.crossOrigin = 'anonymous';
+    bg.onload  = () => doCompose(bg);
+    bg.onerror = () => doCompose(null);
+    bg.src = imgPath;
+  } else {
+    doCompose(null);
+  }
 }
 
 function shareDownload(){
-  const overlay = document.getElementById('share-overlay');
-  const imgEl = overlay ? overlay.querySelector('img') : null;
-  const btn = document.getElementById('share-save-btn');
-  if(btn) btn.textContent = '生成中…';
-
-  // 从 overlay 里读取当前结局信息（评级、标题、hint、数值）
-  const gradeEl   = overlay ? overlay.querySelector('[style*="font-size:52px"]') : null;
-  const gradeText = gradeEl ? gradeEl.textContent.trim() : '';
-  const gradeLabelEl = gradeEl ? gradeEl.nextElementSibling : null;
-  const gradeLabelText = gradeLabelEl ? gradeLabelEl.textContent.trim() : '';
-  const titleEl   = gradeLabelEl ? gradeLabelEl.nextElementSibling : null;
-  const titleText = titleEl ? titleEl.textContent.trim() : '';
-  const hintEl    = titleEl ? titleEl.nextElementSibling : null;
-  const hintText  = hintEl ? hintEl.textContent.trim() : '';
-
-  // 读取数值栏（理智/财富/权势）
-  const statEls = overlay ? overlay.querySelectorAll('[style*="font-size:16px;font-weight:700"]') : [];
-  const hpText     = statEls[0] ? statEls[0].textContent.trim() : '';
-  const wealthText = statEls[1] ? statEls[1].textContent.trim() : '';
-  const powerText  = statEls[2] ? statEls[2].textContent.trim() : '';
-  const hasStats   = hpText || wealthText || powerText;
-
-  const GRADE_COLOR = {S:'#d4af37',A:'#4caf50',B:'#6fbaff',C:'#ff9966',D:'#ff4444'};
-  const gradeColor = GRADE_COLOR[gradeText] || '#d4af37';
-
-  const W = 750, H = Math.round(750 * 16 / 9); // 750×1334
-
-  function drawCard(bgImg) {
-    const canvas = document.createElement('canvas');
-    canvas.width = W; canvas.height = H;
-    const ctx = canvas.getContext('2d');
-
-    // 1. 背景：深色渐变
-    const bgGrad = ctx.createLinearGradient(0, 0, W*0.6, H);
-    bgGrad.addColorStop(0, '#0e0828');
-    bgGrad.addColorStop(1, '#120a30');
-    ctx.fillStyle = bgGrad;
-    ctx.fillRect(0, 0, W, H);
-
-    // 2. 绘制底图（如有）
-    if(bgImg) {
-      const scale = Math.max(W/bgImg.naturalWidth, H/bgImg.naturalHeight);
-      const sw = bgImg.naturalWidth*scale, sh = bgImg.naturalHeight*scale;
-      ctx.drawImage(bgImg, (W-sw)/2, (H-sh)/2, sw, sh);
-    }
-
-    // 3. 底部渐变遮罩（从底部往上占35%）
-    const overlayH = H * 0.42;
-    const grad = ctx.createLinearGradient(0, H - overlayH, 0, H);
-    grad.addColorStop(0,   'rgba(6,4,18,0)');
-    grad.addColorStop(0.35,'rgba(6,4,18,0.55)');
-    grad.addColorStop(0.65,'rgba(6,4,18,0.85)');
-    grad.addColorStop(1,   'rgba(6,4,18,0.98)');
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, H - overlayH, W, overlayH);
-
-    // 如果有数值栏，在底部再加一层深色区域
-    const statAreaH = hasStats ? 120 : 0;
-    if(hasStats) {
-      ctx.fillStyle = 'rgba(0,0,0,0.55)';
-      ctx.fillRect(0, H - statAreaH, W, statAreaH);
-      // 分隔线
-      ctx.strokeStyle = gradeColor + '40';
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(32, H - statAreaH);
-      ctx.lineTo(W - 32, H - statAreaH);
-      ctx.stroke();
-    }
-
-    // 4. 文字：评级大字
-    const textBottom = hasStats ? H - statAreaH - 28 : H - 40;
-    let curY = textBottom;
-
-    // hint（最底部文字）
-    if(hintText) {
-      ctx.font = '500 26px "PingFang SC","Microsoft YaHei",sans-serif';
-      ctx.fillStyle = 'rgba(200,180,130,0.9)';
-      ctx.textAlign = 'center';
-      ctx.shadowColor = 'rgba(0,0,0,1)';
-      ctx.shadowBlur = 8;
-      ctx.fillText(hintText, W/2, curY);
-      curY -= 44;
-    }
-
-    // 结局标题
-    if(titleText) {
-      ctx.font = '700 46px "PingFang SC","Microsoft YaHei",sans-serif';
-      ctx.fillStyle = '#f0e8c8';
-      ctx.textAlign = 'center';
-      ctx.shadowColor = 'rgba(0,0,0,1)';
-      ctx.shadowBlur = 12;
-      ctx.fillText(titleText, W/2, curY);
-      curY -= 52;
-    }
-
-    // 评级描述（神迹级/觉醒级等）
-    if(gradeLabelText) {
-      ctx.font = '500 28px "PingFang SC","Microsoft YaHei",sans-serif';
-      ctx.fillStyle = gradeColor;
-      ctx.textAlign = 'center';
-      ctx.shadowColor = 'rgba(0,0,0,1)';
-      ctx.shadowBlur = 8;
-      ctx.fillText(gradeLabelText, W/2, curY);
-      curY -= 80;
-    }
-
-    // 评级大字
-    if(gradeText) {
-      ctx.font = '900 130px "PingFang SC","Microsoft YaHei",sans-serif';
-      ctx.fillStyle = gradeColor;
-      ctx.textAlign = 'center';
-      ctx.shadowColor = gradeColor;
-      ctx.shadowBlur = 40;
-      ctx.fillText(gradeText, W/2, curY);
-      ctx.shadowBlur = 0;
-    }
-
-    // 5. 数值栏（三列）
-    if(hasStats) {
-      const statY = H - statAreaH + 24;
-      const cols = [
-        {label:'理　智', val:hpText,     color:'#7fc8ff'},
-        {label:'财　富', val:wealthText,  color:'#5cc464'},
-        {label:'权　势', val:powerText,   color:'#d4af37'},
-      ];
-      const colW = W / 3;
-      cols.forEach((col, i) => {
-        const cx = colW * i + colW / 2;
-        ctx.textAlign = 'center';
-        ctx.shadowBlur = 0;
-        ctx.font = '400 22px "PingFang SC","Microsoft YaHei",sans-serif';
-        ctx.fillStyle = col.color + 'bb';
-        ctx.fillText(col.label, cx, statY + 20);
-        ctx.font = '700 38px "PingFang SC","Microsoft YaHei",sans-serif';
-        ctx.fillStyle = col.color;
-        ctx.shadowColor = col.color;
-        ctx.shadowBlur = 8;
-        ctx.fillText(col.val, cx, statY + 68);
-        ctx.shadowBlur = 0;
-      });
-    }
-
-    // 6. 顶部小标题
-    ctx.font = '400 22px "Courier New",monospace';
-    ctx.fillStyle = 'rgba(212,175,55,0.5)';
-    ctx.textAlign = 'center';
-    ctx.shadowBlur = 0;
-    ctx.fillText('✦  S T A R P E A C E  C O R P  ✦', W/2, 48);
-
-    // 输出
-    const a = document.createElement('a');
-    a.download = `斯科特-${titleText||'结局卡片'}.png`;
-    a.href = canvas.toDataURL('image/png');
-    a.click();
-    if(btn) btn.textContent = '保存图片';
-  }
-
-  if(imgEl && imgEl.src) {
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.onload  = () => drawCard(img);
-    img.onerror = () => drawCard(null);
-    img.src = imgEl.src;
-  } else {
-    drawCard(null);
-  }
+  // 下载按钮：直接取已合成图的 dataURL
+  const composedImg = document.querySelector('#share-img-wrap img');
+  if(!composedImg) return;
+  const dataURL = composedImg.getAttribute('data-dataurl') || composedImg.src;
+  if(!dataURL || dataURL.startsWith('http')) { alert('图片尚未合成完成，请稍候再试'); return; }
+  const title = document.querySelector('#share-img-wrap img') ? '结局卡片' : '结局卡片';
+  const a = document.createElement('a');
+  a.download = `斯科特-结局卡片.png`;
+  a.href = dataURL;
+  a.click();
 }
 
 function showEndingDetail(key){
