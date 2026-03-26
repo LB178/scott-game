@@ -3471,31 +3471,173 @@ function showShareCard(endingKey, hp, wealth, power){
 }
 
 function shareDownload(){
-  const imgEl = document.querySelector('#share-overlay img');
+  const overlay = document.getElementById('share-overlay');
+  const imgEl = overlay ? overlay.querySelector('img') : null;
   const btn = document.getElementById('share-save-btn');
-  if(!imgEl){ alert('暂无插图可保存'); return; }
   if(btn) btn.textContent = '生成中…';
-  const canvas = document.createElement('canvas');
-  const W = 750, H = Math.round(750 * 16 / 9);
-  canvas.width = W; canvas.height = H;
-  const ctx = canvas.getContext('2d');
-  const img = new Image();
-  img.crossOrigin = 'anonymous';
-  img.onload = () => {
-    const scale = Math.max(W/img.naturalWidth, H/img.naturalHeight);
-    const sw = img.naturalWidth*scale, sh = img.naturalHeight*scale;
-    ctx.drawImage(img, (W-sw)/2, (H-sh)/2, sw, sh);
+
+  // 从 overlay 里读取当前结局信息（评级、标题、hint、数值）
+  const gradeEl   = overlay ? overlay.querySelector('[style*="font-size:52px"]') : null;
+  const gradeText = gradeEl ? gradeEl.textContent.trim() : '';
+  const gradeLabelEl = gradeEl ? gradeEl.nextElementSibling : null;
+  const gradeLabelText = gradeLabelEl ? gradeLabelEl.textContent.trim() : '';
+  const titleEl   = gradeLabelEl ? gradeLabelEl.nextElementSibling : null;
+  const titleText = titleEl ? titleEl.textContent.trim() : '';
+  const hintEl    = titleEl ? titleEl.nextElementSibling : null;
+  const hintText  = hintEl ? hintEl.textContent.trim() : '';
+
+  // 读取数值栏（理智/财富/权势）
+  const statEls = overlay ? overlay.querySelectorAll('[style*="font-size:16px;font-weight:700"]') : [];
+  const hpText     = statEls[0] ? statEls[0].textContent.trim() : '';
+  const wealthText = statEls[1] ? statEls[1].textContent.trim() : '';
+  const powerText  = statEls[2] ? statEls[2].textContent.trim() : '';
+  const hasStats   = hpText || wealthText || powerText;
+
+  const GRADE_COLOR = {S:'#d4af37',A:'#4caf50',B:'#6fbaff',C:'#ff9966',D:'#ff4444'};
+  const gradeColor = GRADE_COLOR[gradeText] || '#d4af37';
+
+  const W = 750, H = Math.round(750 * 16 / 9); // 750×1334
+
+  function drawCard(bgImg) {
+    const canvas = document.createElement('canvas');
+    canvas.width = W; canvas.height = H;
+    const ctx = canvas.getContext('2d');
+
+    // 1. 背景：深色渐变
+    const bgGrad = ctx.createLinearGradient(0, 0, W*0.6, H);
+    bgGrad.addColorStop(0, '#0e0828');
+    bgGrad.addColorStop(1, '#120a30');
+    ctx.fillStyle = bgGrad;
+    ctx.fillRect(0, 0, W, H);
+
+    // 2. 绘制底图（如有）
+    if(bgImg) {
+      const scale = Math.max(W/bgImg.naturalWidth, H/bgImg.naturalHeight);
+      const sw = bgImg.naturalWidth*scale, sh = bgImg.naturalHeight*scale;
+      ctx.drawImage(bgImg, (W-sw)/2, (H-sh)/2, sw, sh);
+    }
+
+    // 3. 底部渐变遮罩（从底部往上占35%）
+    const overlayH = H * 0.42;
+    const grad = ctx.createLinearGradient(0, H - overlayH, 0, H);
+    grad.addColorStop(0,   'rgba(6,4,18,0)');
+    grad.addColorStop(0.35,'rgba(6,4,18,0.55)');
+    grad.addColorStop(0.65,'rgba(6,4,18,0.85)');
+    grad.addColorStop(1,   'rgba(6,4,18,0.98)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, H - overlayH, W, overlayH);
+
+    // 如果有数值栏，在底部再加一层深色区域
+    const statAreaH = hasStats ? 120 : 0;
+    if(hasStats) {
+      ctx.fillStyle = 'rgba(0,0,0,0.55)';
+      ctx.fillRect(0, H - statAreaH, W, statAreaH);
+      // 分隔线
+      ctx.strokeStyle = gradeColor + '40';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(32, H - statAreaH);
+      ctx.lineTo(W - 32, H - statAreaH);
+      ctx.stroke();
+    }
+
+    // 4. 文字：评级大字
+    const textBottom = hasStats ? H - statAreaH - 28 : H - 40;
+    let curY = textBottom;
+
+    // hint（最底部文字）
+    if(hintText) {
+      ctx.font = '500 26px "PingFang SC","Microsoft YaHei",sans-serif';
+      ctx.fillStyle = 'rgba(200,180,130,0.9)';
+      ctx.textAlign = 'center';
+      ctx.shadowColor = 'rgba(0,0,0,1)';
+      ctx.shadowBlur = 8;
+      ctx.fillText(hintText, W/2, curY);
+      curY -= 44;
+    }
+
+    // 结局标题
+    if(titleText) {
+      ctx.font = '700 46px "PingFang SC","Microsoft YaHei",sans-serif';
+      ctx.fillStyle = '#f0e8c8';
+      ctx.textAlign = 'center';
+      ctx.shadowColor = 'rgba(0,0,0,1)';
+      ctx.shadowBlur = 12;
+      ctx.fillText(titleText, W/2, curY);
+      curY -= 52;
+    }
+
+    // 评级描述（神迹级/觉醒级等）
+    if(gradeLabelText) {
+      ctx.font = '500 28px "PingFang SC","Microsoft YaHei",sans-serif';
+      ctx.fillStyle = gradeColor;
+      ctx.textAlign = 'center';
+      ctx.shadowColor = 'rgba(0,0,0,1)';
+      ctx.shadowBlur = 8;
+      ctx.fillText(gradeLabelText, W/2, curY);
+      curY -= 80;
+    }
+
+    // 评级大字
+    if(gradeText) {
+      ctx.font = '900 130px "PingFang SC","Microsoft YaHei",sans-serif';
+      ctx.fillStyle = gradeColor;
+      ctx.textAlign = 'center';
+      ctx.shadowColor = gradeColor;
+      ctx.shadowBlur = 40;
+      ctx.fillText(gradeText, W/2, curY);
+      ctx.shadowBlur = 0;
+    }
+
+    // 5. 数值栏（三列）
+    if(hasStats) {
+      const statY = H - statAreaH + 24;
+      const cols = [
+        {label:'理　智', val:hpText,     color:'#7fc8ff'},
+        {label:'财　富', val:wealthText,  color:'#5cc464'},
+        {label:'权　势', val:powerText,   color:'#d4af37'},
+      ];
+      const colW = W / 3;
+      cols.forEach((col, i) => {
+        const cx = colW * i + colW / 2;
+        ctx.textAlign = 'center';
+        ctx.shadowBlur = 0;
+        ctx.font = '400 22px "PingFang SC","Microsoft YaHei",sans-serif';
+        ctx.fillStyle = col.color + 'bb';
+        ctx.fillText(col.label, cx, statY + 20);
+        ctx.font = '700 38px "PingFang SC","Microsoft YaHei",sans-serif';
+        ctx.fillStyle = col.color;
+        ctx.shadowColor = col.color;
+        ctx.shadowBlur = 8;
+        ctx.fillText(col.val, cx, statY + 68);
+        ctx.shadowBlur = 0;
+      });
+    }
+
+    // 6. 顶部小标题
+    ctx.font = '400 22px "Courier New",monospace';
+    ctx.fillStyle = 'rgba(212,175,55,0.5)';
+    ctx.textAlign = 'center';
+    ctx.shadowBlur = 0;
+    ctx.fillText('✦  S T A R P E A C E  C O R P  ✦', W/2, 48);
+
+    // 输出
     const a = document.createElement('a');
-    a.download = '斯科特-结局卡片.png';
+    a.download = `斯科特-${titleText||'结局卡片'}.png`;
     a.href = canvas.toDataURL('image/png');
     a.click();
     if(btn) btn.textContent = '保存图片';
-  };
-  img.onerror = () => {
-    if(btn) btn.textContent = '保存图片';
-    alert('图片加载失败，请长按图片手动保存');
-  };
-  img.src = imgEl.src;
+  }
+
+  if(imgEl && imgEl.src) {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload  = () => drawCard(img);
+    img.onerror = () => drawCard(null);
+    img.src = imgEl.src;
+  } else {
+    drawCard(null);
+  }
 }
 
 function showEndingDetail(key){
