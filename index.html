@@ -3357,267 +3357,94 @@ function clearGallery(){
 // ===================================================
 // endingKey: 结局key; hp/wealth/power: 触发时数值(null则不显示数值)
 function showShareCard(endingKey, hp, wealth, power){
-  // 找结局数据
   const GRADE_COLOR = {S:'#d4af37',A:'#4caf50',B:'#6fbaff',C:'#ff9966',D:'#ff4444'};
   const GRADE_LABEL = {S:'神迹级',A:'觉醒级',B:'均衡级',C:'代价级',D:'崩溃级'};
-
-  // 从 endings 对象中获取 title/text/grade
   const endingsData = {
-    '破产':{title:'系统清零',grade:'D',text:'账户被冻结，信用评级归零。在星际和平公司的体系里，你从"资产"变成了"负债"。'},
-    '理智归零':{title:'认知崩溃',grade:'D',text:'你终于遇到了一个无法被优化的问题：你自己。当理性系统试图处理"理性本身是否有意义"这个问题时，它陷入了死循环。'},
-    'end_fired':{title:'被淘汰',grade:'D',text:'你的员工卡被当场注销。你证明了自己最害怕的事：你是可以被替换的。'},
-    'end_breakdown':{title:'系统过载',grade:'D',text:'有些成本只是被延迟了，而不是被消除了。'},
-    'end_imprisoned':{title:'规则的代价',grade:'D',text:'一个只懂得利用规则的人，面对制定规则的人时，还剩下什么？'},
-    'end_suicide':{title:'系统终止',grade:'D',text:'计算的结果是：继续运行的期望值为负。于是系统选择了自我终止。'},
-    'end_assassinated':{title:'猎场的终点',grade:'D',text:'权力的顶端是猎场，而你只是其中一个猎物。'},
-    'end_monster':{title:'完美的工具',grade:'C',text:'你达到了最高效率，但也失去了证明自己和工具有任何区别的能力。'},
-    'end_hollow_success':{title:'空心的胜利',grade:'C',text:'你达到了系统定义的所有成功指标，却失去了成为"人"的可能性。'},
-    'end_stagnant':{title:'永久停滞',grade:'C',text:'在一个动态系统中，不进步就是退步。你将在这个位置上慢慢老去。'},
-    'end_betrayed':{title:'信任的代价',grade:'C',text:'你高估了理性的普适性。'},
-    'end_hunted':{title:'被全面追杀',grade:'C',text:'你的优化能力，最终优化掉了你自己的生存空间。'},
-    'end_delayed_justice':{title:'延迟的清算',grade:'C',text:'有些债务只是被延后，而不是被消除。'},
-    'end_fugitive_final':{title:'选项耗尽',grade:'C',text:'每次用长期选项交换短期生存，最终陷入无解的困境。'},
-    'end_destroyed_by_guilt':{title:'不可优化的成本',grade:'C',text:'有些成本是无法被任何系统消化的。'},
-    'end_uneasy_alliance':{title:'交易性联盟',grade:'B',text:'把仇恨转化为了合作协议——两个都不相信对方、但都清楚合作比对抗更有利的人。'},
-    'end_ordinary':{title:'灰色中立',grade:'B',text:'一个人如果永远只选择最安全的选项，到底还算不算在做选择？'},
-    'end_exile':{title:'自愿流放',grade:'B',text:'这是解放还是逃避？也许两者都是。'},
-    'end_escape':{title:'系统重启',grade:'B',text:'如果没有任何外部评价系统，你会成为什么样的人？'},
-    'end_silent_penance':{title:'经济性赎罪',grade:'B',text:'你活在一个悖论里：连赎罪都在用功利主义的方式进行。'},
-    'end_late_redemption':{title:'迟到的诚实',grade:'B',text:'承认错误的成本，低于继续掩盖的成本——即使这个认知来得有点晚。'},
-    'end_balanced_redemption':{title:'平衡的艺术',grade:'B',text:'也许人生本来就不存在最优解，只存在"可接受解"。'},
-    'end_protected':{title:'保护性交易',grade:'A',text:'在宇宙中，没有真正的自由——只有选择你的依附对象。'},
-    'end_compromise':{title:'次优均衡',grade:'A',text:'真正的理性不是追求个体最优，而是追求系统最优。'},
-    'end_principled':{title:'意外的原则',grade:'A',text:'也许"正确"和"有利"并不总是冲突的。'},
-    'end_martyrdom':{title:'功能外的选择',grade:'S',text:'你终于证明了：你还能为了某种不可量化的东西，放弃所有可量化的一切。'},
-    'end_kamikaze':{title:'终极博弈',grade:'S',text:'你还能做出完全超出个人损益计算的选择。'},
-    'end_justice_served':{title:'外部定价',grade:'A',text:'你承认了有些东西是你无法自己处理的。这是认知的局限，也是认知的进步。'},
-    'end_prison_redemption':{title:'强制暂停',grade:'A',text:'你又有机会提出那个被搁置很久的问题了。'},
-    'end_true_redemption':{title:'归零重启',grade:'S',text:'你还在尝试理解"价值"的不同定义方式。'},
+    '破产':{title:'系统清零',grade:'D',hint:'账户归零，被系统抹除'},
+    '理智归零':{title:'认知崩溃',grade:'D',hint:'理性系统陷入死循环'},
+    'end_fired':{title:'被淘汰',grade:'D',hint:'你是可以被替换的'},
+    'end_breakdown':{title:'系统过载',grade:'D',hint:'有些成本只是被延迟了'},
+    'end_imprisoned':{title:'规则的代价',grade:'D',hint:'规则只是权力的工具'},
+    'end_suicide':{title:'系统终止',grade:'D',hint:'继续运行的期望值为负'},
+    'end_assassinated':{title:'猎场的终点',grade:'D',hint:'权力的顶端是猎场'},
+    'end_monster':{title:'完美的工具',grade:'C',hint:'失去了与工具的区别'},
+    'end_hollow_success':{title:'空心的胜利',grade:'C',hint:'失去了成为"人"的可能性'},
+    'end_stagnant':{title:'永久停滞',grade:'C',hint:'不进步就是退步'},
+    'end_betrayed':{title:'信任的代价',grade:'C',hint:'高估了理性的普适性'},
+    'end_hunted':{title:'被全面追杀',grade:'C',hint:'优化掉了自己的生存空间'},
+    'end_delayed_justice':{title:'延迟的清算',grade:'C',hint:'有些债务只是被延后'},
+    'end_fugitive_final':{title:'选项耗尽',grade:'C',hint:'选择空间被压缩至零'},
+    'end_destroyed_by_guilt':{title:'不可优化的成本',grade:'C',hint:'无法被任何系统消化'},
+    'end_uneasy_alliance':{title:'交易性联盟',grade:'B',hint:'合作比对抗更有利的人'},
+    'end_ordinary':{title:'灰色中立',grade:'B',hint:'还算不算在做选择？'},
+    'end_exile':{title:'自愿流放',grade:'B',hint:'解放还是逃避？'},
+    'end_escape':{title:'系统重启',grade:'B',hint:'重新回答那个问题'},
+    'end_silent_penance':{title:'经济性赎罪',grade:'B',hint:'连赎罪都在用功利主义'},
+    'end_late_redemption':{title:'迟到的诚实',grade:'B',hint:'这个认知来得有点晚'},
+    'end_balanced_redemption':{title:'平衡的艺术',grade:'B',hint:'也许只存在可接受解'},
+    'end_protected':{title:'保护性交易',grade:'A',hint:'选择你的依附对象'},
+    'end_compromise':{title:'次优均衡',grade:'A',hint:'追求系统最优解'},
+    'end_principled':{title:'意外的原则',grade:'A',hint:'正确与有利并不冲突'},
+    'end_martyrdom':{title:'功能外的选择',grade:'S',hint:'为不可量化的东西放弃一切'},
+    'end_kamikaze':{title:'终极博弈',grade:'S',hint:'超出个人损益的选择'},
+    'end_justice_served':{title:'外部定价',grade:'A',hint:'承认自己无法处理的事'},
+    'end_prison_redemption':{title:'强制暂停',grade:'A',hint:'重新提出那个问题'},
+    'end_true_redemption':{title:'归零重启',grade:'S',hint:'理解价值的不同方式'},
   };
-
   const ed = endingsData[endingKey];
   if(!ed){ alert('结局数据未找到'); return; }
-
-  const gc = GRADE_COLOR[ed.grade] || '#999';
+  const c = GRADE_COLOR[ed.grade] || '#999';
   const gl = GRADE_LABEL[ed.grade] || '';
-  const gameUrl = window.location.href.split('?')[0];
 
-  // 创建遮罩
+  const IMGMAP = {
+    '破产':'images/end_pochan.png','理智归零':'images/end_lizhi.png',
+    'end_fired':'images/end_fired.png','end_breakdown':'images/end_breakdown.png',
+    'end_imprisoned':'images/end_imprisoned.png','end_suicide':'images/end_suicide.png',
+    'end_assassinated':'images/end_assassinated.png','end_protected':'images/end_protected.png',
+    'end_compromise':'images/end_compromise.png','end_justice_served':'images/end_justice_served.png',
+    'end_prison_redemption':'images/end_prison_redemption.png','end_martyrdom':'images/end_martyrdom.png',
+    'end_kamikaze':'images/end_kamikaze.png','end_true_redemption':'images/end_true_redemption.png',
+    'end_monster':'images/B.png','end_hollow_success':'images/B.png','end_stagnant':'images/B.png',
+  };
+  let imgPath = IMGMAP[endingKey] || (ed.grade==='B'?'images/B.png':ed.grade==='C'?'images/C.png':'');
+  const artHtml = imgPath
+    ? `<img src="${imgPath}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;">`
+    : `<div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:${c};opacity:0.4;font-size:13px;letter-spacing:1px;"><div style="font-size:24px;">✦</div><div>插图待加载</div></div>`;
+
+  // 数值栏（游玩结局时显示）
+  const showStats = hp!==null && wealth!==null && power!==null;
+  const statsHtml = showStats ? `
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:12px 16px;border-top:1px solid ${c}22;background:rgba(0,0,0,0.25);">
+      <div style="text-align:center;"><div style="font-size:10px;color:rgba(111,186,255,0.7);letter-spacing:1px;margin-bottom:3px;">理　智</div><div style="font-size:16px;font-weight:700;color:#7fc8ff;">${hp}/20</div></div>
+      <div style="text-align:center;"><div style="font-size:10px;color:rgba(76,175,80,0.7);letter-spacing:1px;margin-bottom:3px;">财　富</div><div style="font-size:16px;font-weight:700;color:#5cc464;">${wealth}</div></div>
+      <div style="text-align:center;"><div style="font-size:10px;color:rgba(212,175,55,0.7);letter-spacing:1px;margin-bottom:3px;">权　势</div><div style="font-size:16px;font-weight:700;color:#d4af37;">${power}/100</div></div>
+    </div>` : '';
+
   const overlay = document.createElement('div');
   overlay.id = 'share-overlay';
-  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.82);z-index:99998;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(6px);overflow-y:auto;';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:99998;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px);';
   overlay.onclick = ev => { if(ev.target===overlay) overlay.remove(); };
 
-  // 内容容器
-  const wrap = document.createElement('div');
-  wrap.style.cssText = 'background:linear-gradient(160deg,#100c28,#0a0818);border:1px solid rgba(212,175,55,0.25);border-radius:16px;padding:24px;max-width:480px;width:100%;box-shadow:0 12px 60px rgba(0,0,0,0.8);';
-
-  wrap.innerHTML = `
-    <div style="display:flex;align-items:center;justify-content:flex-end;margin-bottom:16px;">
-      <button onclick="document.getElementById('share-overlay').remove()" style="background:none;border:none;color:#8a8070;font-size:18px;cursor:pointer;padding:4px 8px;">✕</button>
-    </div>
-    <canvas id="share-canvas" style="width:100%;border-radius:10px;display:block;margin-bottom:16px;"></canvas>
-    <div id="share-qr-loading" style="text-align:center;font-size:12px;color:#7a6f55;margin-bottom:12px;">正在生成卡片…</div>
-    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
-      <button id="share-download-btn" style="display:none;background:linear-gradient(135deg,#1a3020,#2a4828,#1a3020);color:#80d060;border:1px solid rgba(80,160,60,0.4);border-radius:10px;padding:10px 24px;font-size:13px;letter-spacing:2px;cursor:pointer;font-family:inherit;">保存图片</button>
+  overlay.innerHTML = `
+    <div style="background:linear-gradient(160deg,rgba(20,15,40,0.98),rgba(10,8,20,0.99));border:1px solid ${c}44;border-radius:16px;max-width:400px;width:100%;position:relative;box-shadow:0 8px 60px rgba(0,0,0,0.8);overflow-y:auto;max-height:90vh;">
+      <button onclick="document.getElementById('share-overlay').remove()" style="position:absolute;top:12px;right:14px;background:rgba(0,0,0,0.5);border:none;color:#ccc;font-size:16px;cursor:pointer;line-height:1;padding:4px 8px;z-index:10;border-radius:6px;">✕</button>
+      <div style="width:100%;aspect-ratio:9/16;background:linear-gradient(160deg,#0e0828,#120a30);position:relative;">
+        ${artHtml}
+        <div style="position:absolute;bottom:0;left:0;right:0;padding:40px 18px 22px;background:linear-gradient(to top,rgba(6,4,18,0.97) 0%,rgba(6,4,18,0.8) 45%,transparent 100%);display:flex;flex-direction:column;align-items:center;gap:5px;">
+          <div style="font-size:52px;font-weight:900;color:${c};line-height:1;text-shadow:0 0 24px ${c},0 2px 4px rgba(0,0,0,0.9);-webkit-text-stroke:1px rgba(0,0,0,0.6);">${ed.grade}</div>
+          <div style="font-size:12px;letter-spacing:3px;color:${c};text-shadow:0 1px 4px rgba(0,0,0,1);">${gl}</div>
+          <div style="font-size:18px;font-weight:700;letter-spacing:3px;color:#f0e8c8;text-shadow:0 2px 8px rgba(0,0,0,1);margin-top:2px;">${ed.title}</div>
+          <div style="font-size:11px;color:rgba(200,180,130,0.9);line-height:1.7;text-align:center;text-shadow:0 1px 4px rgba(0,0,0,1);padding:0 4px;">${ed.hint}</div>
+        </div>
+      </div>
+      ${statsHtml}
+      <div style="padding:14px 20px 18px;text-align:center;">
+        <p style="font-size:11px;color:#7a6f55;letter-spacing:1px;margin-bottom:12px;">长按图片可保存分享</p>
+      </div>
     </div>
   `;
 
-  overlay.appendChild(wrap);
   document.body.appendChild(overlay);
-
-  // 等待 canvas 挂载后绘制
-  requestAnimationFrame(()=>{
-    const canvas = document.getElementById('share-canvas');
-    // 9:16 竖版
-    const W = 750, H = Math.round(750 * 16 / 9);
-    canvas.width = W; canvas.height = H;
-    const ctx = canvas.getContext('2d');
-    const F = '"Microsoft YaHei","PingFang SC","Noto Serif SC",sans-serif';
-
-    // 计算插图路径
-    const _sg = ed.grade, _st = ed.title, _sk = endingKey;
-    const _endingImgMapLocal = {
-      '破产':                  'images/end_pochan.png',
-      '理智归零':               'images/end_lizhi.png',
-      'end_fired':             'images/end_fired.png',
-      'end_breakdown':         'images/end_breakdown.png',
-      'end_imprisoned':        'images/end_imprisoned.png',
-      'end_suicide':           'images/end_suicide.png',
-      'end_assassinated':      'images/end_assassinated.png',
-      'end_protected':         'images/end_protected.png',
-      'end_compromise':        'images/end_compromise.png',
-      'end_justice_served':    'images/end_justice_served.png',
-      'end_prison_redemption': 'images/end_prison_redemption.png',
-      'end_martyrdom':         'images/end_martyrdom.png',
-      'end_kamikaze':          'images/end_kamikaze.png',
-      'end_true_redemption':   'images/end_true_redemption.png',
-    };
-    let _sImgPath = '';
-    if(_endingImgMapLocal[_sk]) _sImgPath = _endingImgMapLocal[_sk];
-    else if(_sg==='B') _sImgPath='images/B.png';
-    else if(_sg==='C') _sImgPath='images/C.png';
-
-    function drawCard(artImg){
-    const bgGrad = ctx.createLinearGradient(0,0,0,H);
-    bgGrad.addColorStop(0,'#0e0828');
-    bgGrad.addColorStop(0.6,'#120a30');
-    bgGrad.addColorStop(1,'#08061a');
-    ctx.fillStyle = bgGrad;
-    ctx.fillRect(0,0,W,H);
-
-    // 插图（cover模式铺满全卡）
-    if(artImg){
-      ctx.globalAlpha = 1;
-      const iw = artImg.naturalWidth, ih = artImg.naturalHeight;
-      const scale = Math.max(W/iw, H/ih);
-      const sw = iw*scale, sh = ih*scale;
-      ctx.drawImage(artImg, (W-sw)/2, (H-sh)/2, sw, sh);
-    }
-
-    // 星点
-    [[60,80],[180,160],[320,50],[500,120],[650,60],[740,180],[90,300],[420,240],[700,400],
-     [200,700],[580,600],[100,1000],[680,960],[350,1140],[50,1200],[720,1100],[400,500],[250,900]
-    ].forEach(([x,y])=>{
-      ctx.fillStyle='rgba(255,255,255,0.4)';
-      ctx.beginPath();ctx.arc(x,y,1.8,0,Math.PI*2);ctx.fill();
-    });
-    [[140,110],[380,90],[620,150],[260,840],[500,1200]].forEach(([x,y])=>{
-      ctx.fillStyle='rgba(212,175,55,0.5)';
-      ctx.beginPath();ctx.arc(x,y,2.5,0,Math.PI*2);ctx.fill();
-    });
-
-    // 顶部色晕
-    const _hex=gc.replace('#','');
-    const _r=parseInt(_hex.slice(0,2),16),_g=parseInt(_hex.slice(2,4),16),_b=parseInt(_hex.slice(4,6),16);
-    const glowG=ctx.createRadialGradient(W/2,0,0,W/2,0,500);
-    glowG.addColorStop(0,`rgba(${_r},${_g},${_b},0.18)`);
-    glowG.addColorStop(1,'rgba(0,0,0,0)');
-    ctx.fillStyle=glowG; ctx.fillRect(0,0,W,400);
-
-    // 顶部边框
-    const topG=ctx.createLinearGradient(0,0,W,0);
-    topG.addColorStop(0,'transparent');topG.addColorStop(0.5,gc);topG.addColorStop(1,'transparent');
-    ctx.strokeStyle=topG;ctx.lineWidth=2;
-    ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(W,0);ctx.stroke();
-
-    // 底部35%叠层渐变
-    // 叠层渐变已关闭，插图完整显示
-
-    ctx.textAlign='center';
-
-    function withShadow(fn, blur, color){
-      ctx.shadowBlur=blur; ctx.shadowColor=color||'rgba(0,0,0,1)';
-      fn();
-      ctx.shadowBlur=0;
-    }
-
-    // ── 从底部往上固定布局，避免重叠 ──
-    const showStats2 = hp!==null && wealth!==null && power!==null;
-    const statsBlockH = showStats2 ? 100 : 0; // 数值栏高度
-    const bottomPad = 28;
-
-    // 1. 数值栏（最底部）
-    if(showStats2){
-      const statsBaseY = H - bottomPad; // 数值文字基线
-      const divY = H - bottomPad - statsBlockH + 8;
-      const divG=ctx.createLinearGradient(0,0,W,0);
-      divG.addColorStop(0,'transparent');divG.addColorStop(0.5,'rgba(212,175,55,0.3)');divG.addColorStop(1,'transparent');
-      ctx.strokeStyle=divG;ctx.lineWidth=1;
-      ctx.beginPath();ctx.moveTo(60,divY);ctx.lineTo(W-60,divY);ctx.stroke();
-      const col=[160,W/2,W-160];
-      const labels=['理　智','财　富','权　势'];
-      const values=[`${hp}/20`,`${wealth}`,`${power}/100`];
-      const colors=['#7fc8ff','#5cc464','#d4af37'];
-      const lblC=['rgba(111,186,255,0.7)','rgba(76,175,80,0.7)','rgba(212,175,55,0.7)'];
-      labels.forEach((lb,i)=>{
-        ctx.font=`400 20px ${F}`;ctx.fillStyle=lblC[i];
-        withShadow(()=>ctx.fillText(lb,col[i],statsBaseY-42),4);
-        ctx.font=`700 32px ${F}`;ctx.fillStyle=colors[i];
-        withShadow(()=>ctx.fillText(values[i],col[i],statsBaseY-8),6);
-      });
-    }
-
-    // 2. 文字区：从"距数值栏顶端"往上分配，固定各行位置
-    const textBottom = H - bottomPad - statsBlockH - (showStats2 ? 20 : 0);
-
-    // 先算简介（最多3行），从下往上推
-    const descSize = 22;
-    ctx.font = `400 ${descSize}px ${F}`;
-    ctx.fillStyle = 'rgba(200,180,130,0.9)';
-    const maxDescW = W - 80;
-    const chars = ed.text.split('');
-    let dl='', dls=[];
-    for(const ch of chars){
-      const t=dl+ch;
-      if(ctx.measureText(t).width>maxDescW){dls.push(dl);dl=ch;}
-      else dl=t;
-    }
-    if(dl) dls.push(dl);
-    const descLines = dls.slice(0,3);
-    const descLineH = descSize * 1.65;
-    const descBlockH = descLines.length * descLineH;
-    const descBottomY = textBottom; // 最后一行基线
-    descLines.forEach((l,i)=>{
-      const lineY = descBottomY - (descLines.length - 1 - i) * descLineH;
-      ctx.strokeStyle='rgba(0,0,0,0.95)'; ctx.lineWidth=4; ctx.strokeText(l, W/2, lineY);
-      withShadow(()=>ctx.fillText(l, W/2, lineY), 12);
-    });
-
-    // 结局名（简介上方）
-    const titleSize = 28;
-    const titleY = descBottomY - descBlockH - 16;
-    ctx.font = `700 ${titleSize}px ${F}`;
-    ctx.fillStyle = '#f0e8c8';
-    ctx.strokeStyle='rgba(0,0,0,0.95)'; ctx.lineWidth=5; ctx.strokeText(ed.title, W/2, titleY);
-    withShadow(()=>ctx.fillText(ed.title, W/2, titleY), 16);
-
-    // 等级标签
-    const lblSize = 18;
-    const lblY = titleY - titleSize * 0.3 - lblSize * 1.1;
-    ctx.font = `600 ${lblSize}px ${F}`;
-    ctx.fillStyle = gc; ctx.globalAlpha = 0.85;
-    ctx.strokeStyle='rgba(0,0,0,0.95)'; ctx.lineWidth=4; ctx.strokeText(gl, W/2, lblY);
-    withShadow(()=>ctx.fillText(gl, W/2, lblY), 10);
-    ctx.globalAlpha = 1;
-
-    // 等级大字
-    const gradeSize = 64;
-    const gradeY = lblY - lblSize * 0.8 - gradeSize * 0.08;
-    ctx.font = `900 ${gradeSize}px ${F}`;
-    ctx.fillStyle = gc;
-    ctx.strokeStyle='rgba(0,0,0,0.9)'; ctx.lineWidth=8; ctx.strokeText(ed.grade, W/2, gradeY);
-    withShadow(()=>ctx.fillText(ed.grade, W/2, gradeY), 28, gc);
-
-    // 底部边框
-    const botG=ctx.createLinearGradient(0,0,W,0);
-    botG.addColorStop(0,'transparent');botG.addColorStop(0.5,gc);botG.addColorStop(1,'transparent');
-    ctx.strokeStyle=botG;ctx.lineWidth=2;
-    ctx.beginPath();ctx.moveTo(0,H-1);ctx.lineTo(W,H-1);ctx.stroke();
-
-    // 完成
-    document.getElementById('share-qr-loading').style.display='none';
-    const dlBtn=document.getElementById('share-download-btn');
-    dlBtn.style.display='inline-block';
-    dlBtn.onclick=()=>{
-      const a=document.createElement('a');
-      a.download=`斯科特-${ed.title}-结局卡片.png`;
-      a.href=canvas.toDataURL('image/png');
-      a.click();
-    };
-    } // end drawCard
-
-    // 加载插图后绘制，失败则直接绘制（无插图）
-    if(_sImgPath){
-      const img = new Image();
-      img.crossOrigin = 'anonymous';
-      img.onload = () => drawCard(img);
-      img.onerror = () => drawCard(null);
-      img.src = _sImgPath;
-    } else {
-      drawCard(null);
-    }
-  });
 }
 
 function showEndingDetail(key){
