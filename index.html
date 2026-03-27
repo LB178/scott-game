@@ -2191,7 +2191,7 @@ function showShareCard(endingKey, hp, wealth, power){
           <div style="font-size:11px;color:rgba(200,180,130,0.9);line-height:1.7;text-align:center;text-shadow:0 1px 4px rgba(0,0,0,1);padding:0 4px;">${ed.hint}</div>
         </div>
       </div>
-      ${statsHtml}
+      <div id="share-stats-html">${statsHtml}</div>
       <div style="padding:14px 20px 18px;text-align:center;">
         <button id="share-save-btn" style="background:linear-gradient(135deg,#1a3020,#2a4828,#1a3020);color:#80d060;border:1px solid rgba(80,160,60,0.4);border-radius:10px;padding:10px 28px;font-size:13px;letter-spacing:2px;cursor:pointer;font-family:inherit;" onclick="shareDownload()">保存图片</button>
         <p id="share-mobile-hint" style="font-size:13px;color:#7a6f55;letter-spacing:1px;margin-top:10px;margin-bottom:0;">生成中，请稍候…</p>
@@ -2297,6 +2297,9 @@ function _renderShareCardToImg(overlay, ed, gl, c, hp, wealth, power){
         a.href = dataUrl; a.click();
       });
     }
+    // 隐藏HTML数值栏（canvas图里已含数值）
+    const statsHtmlEl = overlay.querySelector('#share-stats-html');
+    if(statsHtmlEl) statsHtmlEl.style.display='none';
     // 提示文字
     const hint = overlay.querySelector('#share-mobile-hint');
     if(hint) hint.textContent = '长按图片即可保存完整卡片';
