@@ -758,7 +758,7 @@ options:[
 
 你的账目、物价操纵记录、囤积物资的仓库位置——全部在上面。
 
-[INNER]你忘了一件事：她从一开始就没打算跟你争论。她只是在等你先动手。[/INNER]`,next:'end_confrontation'}
+[INNER]你忘了一件事：她从一开始就没打算跟你争论。她只是在等你先动手。[/INNER]`,next:'end_delayed_justice'}
 ]},
 
 c7_independent:{chapterNum:7,title:'第七章：灰色地带的平衡',
@@ -894,7 +894,7 @@ options:[
 
 他拿走了钱，离开了。
 
-[INNER]你意识到一个可怕的事实：你已经彻底失去了激起别人情感反应的能力。即使是仇恨，也会被你转化为交易。[/INNER]`,next:'end_wanderer'},
+[INNER]你意识到一个可怕的事实：你已经彻底失去了激起别人情感反应的能力。即使是仇恨，也会被你转化为交易。[/INNER]`,next:'end_uneasy_alliance'},
 {label:'先发制人',desc:'在对方行动前解除威胁。这是效率最高的处理方式。',
  delta:{hp:-2,w:0,p:5},cost:0,
  result:`你突然出手，用最高效的方式解除了威胁。整个过程只用了三秒。
