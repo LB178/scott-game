@@ -190,6 +190,208 @@ body{
   0%,100%{box-shadow:0 0 0 rgba(255,80,80,0)}
   50%{box-shadow:0 0 16px rgba(255,80,80,0.4)}
 }
+
+/* ===== 动效系统 ===== */
+
+/* 淡入上移 —— 故事卡、结果卡、商店卡等入场 */
+@keyframes fadeInUp{
+  from{opacity:0;transform:translateY(22px);}
+  to{opacity:1;transform:translateY(0);}
+}
+.fade-in{
+  animation:fadeInUp 0.45s cubic-bezier(.22,.68,0,1.1) both;
+}
+
+/* 选项卡片交错入场 —— 只做位移，不动 opacity */
+@keyframes slideInChoice{
+  from{transform:translateX(-14px);}
+  to{transform:translateX(0);}
+}
+/* 初始不可见状态，动画开始前由 JS 加 class */
+.choice-entering{
+  opacity:0;
+  transition:opacity 0.25s ease;
+}
+.choice-entered{
+  opacity:1;
+}
+/* locked/disabled 最终态（优先级高于 .choice-entered）*/
+.choices .choice-btn.locked{ opacity:0.4 !important; }
+.choices .choice-btn.disabled{ opacity:0.25 !important; }
+
+.choices .choice-btn{
+  animation:slideInChoice 0.38s cubic-bezier(.22,.68,0,1.05) both;
+}
+.choices .choice-btn:nth-child(1){animation-delay:0.08s;}
+.choices .choice-btn:nth-child(2){animation-delay:0.16s;}
+.choices .choice-btn:nth-child(3){animation-delay:0.24s;}
+.choices .choice-btn:nth-child(4){animation-delay:0.32s;}
+.choices .choice-btn:nth-child(5){animation-delay:0.40s;}
+.choices .choice-btn:nth-child(6){animation-delay:0.48s;}
+
+/* 属性数值弹出（数字突然变大再弹回）*/
+@keyframes popNum{
+  0%  {transform:scale(1);}
+  30% {transform:scale(1.45);}
+  60% {transform:scale(0.92);}
+  80% {transform:scale(1.1);}
+  100%{transform:scale(1);}
+}
+.anim-pop{
+  display:inline-block;
+  animation:popNum 0.42s cubic-bezier(.36,.07,.19,.97) both;
+}
+
+/* 属性卡片高亮闪 */
+@keyframes statFlash{
+  0%  {background:var(--option-bg);}
+  30% {background:rgba(212,175,55,0.1);}
+  100%{background:var(--option-bg);}
+}
+.stat-card.flash{animation:statFlash 0.6s ease both;}
+
+/* 进度条轨道入场 */
+@keyframes trackIn{
+  from{opacity:0;transform:scaleX(0.7);}
+  to{opacity:1;transform:scaleX(1);}
+}
+.chapter-track{
+  transform-origin:left center;
+  animation:trackIn 0.5s cubic-bezier(.22,.68,0,1.1) both;
+}
+
+/* 结局大等级字母弹入 */
+@keyframes gradeIn{
+  0%  {opacity:0;transform:scale(0.4) rotate(-8deg);}
+  60% {transform:scale(1.12) rotate(2deg);}
+  80% {transform:scale(0.96) rotate(-1deg);}
+  100%{opacity:1;transform:scale(1) rotate(0deg);}
+}
+.ending-art-grade{
+  animation:gradeIn 0.7s cubic-bezier(.22,.68,0,1.1) 0.2s both;
+}
+.ending-art-grade-label{
+  animation:fadeInUp 0.4s ease 0.55s both;
+}
+.ending-art-title{
+  animation:fadeInUp 0.4s ease 0.7s both;
+}
+.ending-art-desc{
+  animation:fadeInUp 0.4s ease 0.85s both;
+}
+
+/* 系统日志滑入 */
+@keyframes logIn{
+  from{opacity:0;max-height:0;padding-top:0;padding-bottom:0;}
+  to{opacity:1;max-height:120px;padding-top:8px;padding-bottom:8px;}
+}
+.sys-log.visible{
+  animation:logIn 0.3s ease both;
+}
+
+/* 按钮按下反馈 */
+.main-btn:active{
+  transform:translateY(1px) scale(0.97);
+  box-shadow:0 2px 10px rgba(212,175,55,0.15);
+  transition:all 0.08s;
+}
+.choice-btn:active:not(.locked):not(.disabled){
+  transform:translateX(4px) scale(0.98);
+  transition:all 0.08s;
+}
+
+/* 商店卡片入场 */
+.shop-intro{
+  animation:fadeInUp 0.4s ease 0.05s both;
+}
+
+/* 成就 Toast 出现带弹性 */
+@keyframes toastBounce{
+  0%  {transform:translateX(120%);}
+  55% {transform:translateX(-8px);}
+  75% {transform:translateX(4px);}
+  100%{transform:translateX(0);}
+}
+
+/* 遮罩层淡入 */
+@keyframes overlayIn{
+  from{opacity:0;}
+  to{opacity:1;}
+}
+
+/* 弹窗卡片缩放入场 */
+@keyframes modalIn{
+  from{opacity:0;transform:scale(0.88) translateY(16px);}
+  to{opacity:1;transform:scale(1) translateY(0);}
+}
+
+/* 星光粒子（封面背景装饰）*/
+@keyframes twinkle{
+  0%,100%{opacity:0.2;transform:scale(0.8);}
+  50%{opacity:1;transform:scale(1.2);}
+}
+.star-particle{
+  position:absolute;
+  width:2px;height:2px;
+  background:#fff;
+  border-radius:50%;
+  pointer-events:none;
+  animation:twinkle var(--dur,3s) ease-in-out var(--delay,0s) infinite;
+}
+
+/* 属性进度条初次加载动画 */
+@keyframes barLoad{
+  from{width:0 !important;}
+}
+.stat-bar-fill{
+  animation:barLoad 0.8s cubic-bezier(.4,0,.2,1) 0.3s both;
+}
+
+/* 扫光效果（故事卡顶部金线）*/
+@keyframes shimmer{
+  0%  {background-position:-200% center;}
+  100%{background-position:200% center;}
+}
+.story-card::before{
+  background:linear-gradient(90deg, transparent 0%, rgba(232,200,74,0.6) 50%, transparent 100%);
+  background-size:200% auto;
+  animation:shimmer 3s linear infinite;
+}
+.result-card::before{
+  content:'';
+  position:absolute;
+  top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg, transparent 0%, rgba(232,200,74,0.6) 50%, transparent 100%);
+  background-size:200% auto;
+  animation:shimmer 3s linear infinite;
+}
+
+/* 章节进度点依次亮起 */
+@keyframes dotLight{
+  from{opacity:0;transform:scaleX(0);}
+  to{opacity:1;transform:scaleX(1);}
+}
+.track-dot.done{
+  animation:dotLight 0.3s ease both;
+}
+.track-dot.current{
+  animation:dotLight 0.4s cubic-bezier(.22,.68,0,1.4) both;
+}
+
+/* NPC对话块滑入 */
+@keyframes npcIn{
+  from{opacity:0;transform:translateX(-8px);}
+  to{opacity:1;transform:translateX(0);}
+}
+.trpg-npc{
+  animation:npcIn 0.35s ease both;
+}
+
+/* 内心独白淡入 */
+.trpg-inner{
+  animation:fadeInUp 0.4s ease both;
+}
+
 .stat-icon{font-size:20px;flex-shrink:0;line-height:1;}
 .stat-main{flex:1;min-width:0;}
 .stat-label{font-size:11px;color:#c0b490;letter-spacing:1.5px;line-height:1;margin-bottom:3px;}
@@ -404,6 +606,19 @@ body{
   background:linear-gradient(135deg, rgba(232,200,74,0) 0%, rgba(232,200,74,0.07) 100%);
   opacity:0;
   transition:opacity 0.22s;
+}
+
+/* 涟漪效果容器 */
+.ripple{
+  position:absolute;
+  border-radius:50%;
+  background:rgba(232,200,74,0.18);
+  pointer-events:none;
+  transform:scale(0);
+  animation:rippleAnim 0.55s cubic-bezier(.4,0,.2,1) forwards;
+}
+@keyframes rippleAnim{
+  to{transform:scale(4);opacity:0;}
 }
 .choice-btn:hover:not(.locked):not(.disabled){
   border-color:var(--color-gold-border);
@@ -1003,6 +1218,10 @@ function popStat(id, val){
   el.textContent = val;
   el.classList.add('anim-pop');
   el.addEventListener('animationend',()=>el.classList.remove('anim-pop'),{once:true});
+  // 卡片闪光
+  const cardMap = {hp:'card-hp', wealth:'card-wealth', power:'card-power'};
+  const cardEl = document.getElementById(cardMap[id]);
+  if(cardEl){ cardEl.classList.remove('flash'); void cardEl.offsetWidth; cardEl.classList.add('flash'); cardEl.addEventListener('animationend',()=>cardEl.classList.remove('flash'),{once:true}); }
 }
 
 // 属性变化后输出系统日志
@@ -1102,6 +1321,25 @@ function _track(event, extra = {}) {
 }
 
 window.addEventListener('beforeunload', () => _track('exit'));
+
+// ===================================================
+// 封面星粒子
+// ===================================================
+(function spawnStars(){
+  const hero = document.getElementById('coverArt');
+  if(!hero) return;
+  const count = 38;
+  for(let i=0;i<count;i++){
+    const s = document.createElement('div');
+    s.className = 'star-particle';
+    const x = Math.random()*100, y = Math.random()*100;
+    const dur = (2.5 + Math.random()*3.5).toFixed(2)+'s';
+    const delay = (Math.random()*4).toFixed(2)+'s';
+    const size = Math.random()<0.3 ? 3 : Math.random()<0.6 ? 2 : 1;
+    s.style.cssText = `left:${x}%;top:${y}%;width:${size}px;height:${size}px;--dur:${dur};--delay:${delay};opacity:${0.3+Math.random()*0.5};`;
+    hero.appendChild(s);
+  }
+})();
 
 function startGame(){
   playSfx('start');
@@ -1252,6 +1490,42 @@ function loadChapter(id){
   }
   html += '</div>';
   document.getElementById('content').innerHTML = html;
+  _bindRipple();
+  _animateChoices();
+}
+
+// 选项淡入（与位移动画配合，不影响 locked/disabled opacity）
+function _animateChoices(){
+  const btns = document.querySelectorAll('.choices .choice-btn');
+  btns.forEach((btn, i) => {
+    // locked/disabled 从低透明度淡入到目标透明度，普通按钮从0到1
+    const target = btn.classList.contains('locked') ? 0.4
+                 : btn.classList.contains('disabled') ? 0.25 : 1;
+    btn.style.opacity = '0';
+    setTimeout(() => {
+      btn.style.transition = 'opacity 0.28s ease';
+      btn.style.opacity = String(target);
+      // 动画结束后清除 inline style，让 CSS class 接管
+      setTimeout(() => { btn.style.transition = ''; btn.style.opacity = ''; }, 350);
+    }, 60 + i * 80);
+  });
+}
+
+// 涟漪绑定（选项和主按钮）
+function _bindRipple(){
+  document.querySelectorAll('.choice-btn:not(.locked):not(.disabled), .main-btn').forEach(btn=>{
+    btn.addEventListener('click', function(e){
+      const r = document.createElement('span');
+      r.className = 'ripple';
+      const rect = this.getBoundingClientRect();
+      const size = Math.max(rect.width, rect.height);
+      r.style.width = r.style.height = size + 'px';
+      r.style.left = (e.clientX - rect.left - size/2) + 'px';
+      r.style.top  = (e.clientY - rect.top  - size/2) + 'px';
+      this.appendChild(r);
+      r.addEventListener('animationend', ()=>r.remove());
+    }, {passive:true});
+  });
 }
 
 function choose(cid, index){
@@ -1260,7 +1534,19 @@ function choose(cid, index){
   const net = (o.delta?.w||0) - (o.cost||0);
   achCheckChoice(cid, index);
   const ok = updateStats(o.delta?.hp||0, net, o.delta?.p||0);
-  if(ok) showResult(o.result, o.next);
+  if(ok){
+    // 页面切出动画
+    const content = document.getElementById('content');
+    content.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
+    content.style.opacity = '0';
+    content.style.transform = 'translateX(-12px)';
+    setTimeout(()=>{
+      content.style.transition = '';
+      content.style.opacity = '';
+      content.style.transform = '';
+      showResult(o.result, o.next);
+    }, 180);
+  }
 }
 
 function showResult(text, next){
@@ -1283,24 +1569,32 @@ function showResult(text, next){
 
 function continueGame(next){
   playSfx('confirm');
-  // 暗杀事件检测：权势>=120且未触发过
-  if(g.power >= 120 && !g.assassinTriggered && !next.startsWith('end_') && next !== '理智归零' && next !== '破产' && next !== 'assassin'){
-    g.assassinTriggered = true;
-    achCheckAssassin();
-    return loadChapter('assassin');
-  }
-  if(next==='shop1'&&g.shopVisited===0){g.shopVisited=1;playSfx('shop');return loadShop('shop1','c4');}
-  // shop2路由：根据来路决定商店后去哪个章节
-  // c5_local救赎线(shopVisited===0，跳过shop1) -> c7_redemption
-  // c7主线(shopVisited===1，已经过shop1) -> c8
-  if(next==='shop2'){
-    const after = g.shopVisited===1 ? 'c8' : 'c7_redemption';
-    g.shopVisited = Math.max(g.shopVisited, 2);
-    playSfx('shop');
-    return loadShop('shop2', after);
-  }
-  if(next.startsWith('end_')||next==='理智归零'||next==='破产') return showEnding(next);
-  loadChapter(next);
+  // 页面切出动画
+  const content = document.getElementById('content');
+  const doNav = () => {
+    content.style.transition = '';
+    content.style.opacity = '';
+    content.style.transform = '';
+    // 暗杀事件检测：权势>=120且未触发过
+    if(g.power >= 120 && !g.assassinTriggered && !next.startsWith('end_') && next !== '理智归零' && next !== '破产' && next !== 'assassin'){
+      g.assassinTriggered = true;
+      achCheckAssassin();
+      return loadChapter('assassin');
+    }
+    if(next==='shop1'&&g.shopVisited===0){g.shopVisited=1;playSfx('shop');return loadShop('shop1','c4');}
+    if(next==='shop2'){
+      const after = g.shopVisited===1 ? 'c8' : 'c7_redemption';
+      g.shopVisited = Math.max(g.shopVisited, 2);
+      playSfx('shop');
+      return loadShop('shop2', after);
+    }
+    if(next.startsWith('end_')||next==='理智归零'||next==='破产') return showEnding(next);
+    loadChapter(next);
+  };
+  content.style.transition = 'opacity 0.18s ease, transform 0.18s ease';
+  content.style.opacity = '0';
+  content.style.transform = 'translateY(-8px)';
+  setTimeout(doNav, 160);
 }
 
 // ===================================================
@@ -1695,7 +1989,7 @@ function runToastQueue(){
       border:2px solid rgba(232,200,74,0.85);border-radius:12px;
       padding:14px 18px;min-width:240px;max-width:320px;
       box-shadow:0 8px 40px rgba(0,0,0,0.8),0 0 0 4px rgba(212,175,55,0.12),0 0 40px rgba(212,175,55,0.25);
-      transform:translateX(120%);transition:transform 0.35s cubic-bezier(.34,1.4,.64,1);
+      transform:translateX(120%);transition:transform 0.5s cubic-bezier(.22,.68,0,1.2);
       pointer-events:none;
     `;
     document.body.appendChild(toast);
@@ -1767,8 +2061,8 @@ function _syncAudioBtns(){
 function confirmReturnToStart(){
   const overlay = document.createElement('div');
   overlay.id = 'return-confirm-overlay';
-  overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;display:flex;align-items:center;justify-content:center;padding:24px;';
-  overlay.innerHTML=`<div style="background:#0e0c24;border:1px solid rgba(212,175,55,0.35);border-radius:16px;padding:28px 24px;max-width:320px;width:100%;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,0.8);">
+  overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;display:flex;align-items:center;justify-content:center;padding:24px;animation:overlayIn 0.2s ease both;';
+  overlay.innerHTML=`<div style="background:#0e0c24;border:1px solid rgba(212,175,55,0.35);border-radius:16px;padding:28px 24px;max-width:320px;width:100%;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,0.8);animation:modalIn 0.3s cubic-bezier(.22,.68,0,1.1) both;">
     <div style="font-size:15px;font-weight:700;color:#e8c84a;letter-spacing:2px;margin-bottom:12px;">确认返回？</div>
     <div style="font-size:13px;color:#a09070;line-height:1.8;margin-bottom:24px;">本局游戏进度将<span style="color:#ff9090;font-weight:700;">完全丢失</span>，返回后将重新开始。</div>
     <div style="display:flex;gap:10px;justify-content:center;">
@@ -2176,11 +2470,11 @@ function showShareCard(endingKey, hp, wealth, power){
 
   const overlay = document.createElement('div');
   overlay.id = 'share-overlay';
-  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:99998;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px);';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:99998;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px);animation:overlayIn 0.2s ease both;';
   overlay.onclick = ev => { if(ev.target===overlay) overlay.remove(); };
 
   overlay.innerHTML = `
-    <div style="background:linear-gradient(160deg,rgba(20,15,40,0.98),rgba(10,8,20,0.99));border:1px solid ${c}44;border-radius:16px;max-width:400px;width:100%;position:relative;box-shadow:0 8px 60px rgba(0,0,0,0.8);overflow-y:auto;max-height:90vh;">
+    <div style="background:linear-gradient(160deg,rgba(20,15,40,0.98),rgba(10,8,20,0.99));border:1px solid ${c}44;border-radius:16px;max-width:400px;width:100%;position:relative;box-shadow:0 8px 60px rgba(0,0,0,0.8);overflow-y:auto;max-height:90vh;animation:modalIn 0.35s cubic-bezier(.22,.68,0,1.1) both;">
       <button onclick="document.getElementById('share-overlay').remove()" style="position:absolute;top:12px;right:14px;background:rgba(0,0,0,0.5);border:none;color:#ccc;font-size:16px;cursor:pointer;line-height:1;padding:4px 8px;z-index:10;border-radius:6px;">✕</button>
       <div id="share-card-art-wrap" style="width:100%;aspect-ratio:9/16;background:linear-gradient(160deg,#0e0828,#120a30);position:relative;">
         ${artHtml}
@@ -2514,11 +2808,11 @@ function showEndingDetail(key){
   // 创建遮罩层
   const overlay = document.createElement('div');
   overlay.id = 'gallery-overlay';
-  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px);';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px);animation:overlayIn 0.2s ease both;';
   overlay.onclick = (ev) => { if(ev.target===overlay) overlay.remove(); };
 
   overlay.innerHTML = `
-    <div style="background:linear-gradient(160deg,rgba(20,15,40,0.98),rgba(10,8,20,0.99));border:1px solid ${c}44;border-radius:16px;max-width:400px;width:100%;position:relative;box-shadow:0 8px 60px rgba(0,0,0,0.8);overflow-y:auto;max-height:90vh;">
+    <div style="background:linear-gradient(160deg,rgba(20,15,40,0.98),rgba(10,8,20,0.99));border:1px solid ${c}44;border-radius:16px;max-width:400px;width:100%;position:relative;box-shadow:0 8px 60px rgba(0,0,0,0.8);overflow-y:auto;max-height:90vh;animation:modalIn 0.35s cubic-bezier(.22,.68,0,1.1) both;">
       <button onclick="document.getElementById('gallery-overlay').remove()" style="position:absolute;top:12px;right:14px;background:rgba(0,0,0,0.5);border:none;color:#ccc;font-size:16px;cursor:pointer;line-height:1;padding:4px 8px;z-index:10;border-radius:6px;" title="关闭">✕</button>
       <!-- 结局插图 9:16 带叠层文字 -->
       <div style="width:100%;aspect-ratio:9/16;background:linear-gradient(160deg,#0e0828,#120a30);position:relative;">
