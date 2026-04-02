@@ -1917,7 +1917,7 @@ const ALL_ACHIEVEMENTS = [
   // ── 第二层：行为风格型 ──
   {key:'ach_saint',          cat:2, catName:'行为风格', name:'😇 圣人之路',   desc:'至少抵达第7章，且全程未选择任何贿赂或清除类选项',   hint:'不选择「支付延续费用」「清除竞争对手」等选项，且至少到达第7章'},
   {key:'ach_optimizer',      cat:2, catName:'行为风格', name:'😈 效率机器',   desc:'连续5次选择当前可选中权势收益最高的选项', hint:'始终追求权势最大化'},
-  {key:'ach_pacifist',       cat:2, catName:'行为风格', name:'🕊️ 和平主义者', desc:'不携带任何权势抵达第5章',         hint:'前4章完全不积累权势'},
+  {key:'ach_pacifist',       cat:2, catName:'行为风格', name:'🕊️ 和平主义者', desc:'以极低权势抵达第5章', hint:'尽量避免积累权势，到达第5章时权势不超过50'},
   {key:'ach_spendthrift',    cat:2, catName:'行为风格', name:'💸 挥金如土',   desc:'单局财富消耗超过15000',          hint:'在一局中总花费超过15000'},
   {key:'ach_miser',          cat:2, catName:'行为风格', name:'🏦 守财奴',     desc:'抵达第7章时财富仍在初始值的90%以上',hint:'到第7章时财富≥4500'},
 
@@ -2266,7 +2266,7 @@ function achCheckChoice(chapterId, optionIndex){
   // 隐藏分支
   if(chapterId==='c1' && (opt?.next==='c2_cynical'||opt?.label?.includes('精准施压'))) unlockAchievement('ach_hidden_branch');
   // 和平主义：第5章时检查权势
-  if(ch?.chapterNum===5 && g.power===10) unlockAchievement('ach_pacifist');
+  if(ch?.chapterNum===5 && g.power<=50) unlockAchievement('ach_pacifist');
   // 守财奴：第7章时
   if(ch?.chapterNum===7 && g.wealth>=4500) unlockAchievement('ach_miser');
 }
